@@ -1,0 +1,127 @@
+╔══════════════════════════════════════════════════════════════════╗
+║        CIVIC RESOLVE — DEPLOY TO RAILWAY (PUBLIC WEBSITE)       ║
+║         No GitHub needed · Free · Live in 15 minutes            ║
+╚══════════════════════════════════════════════════════════════════╝
+
+WHAT YOU'LL GET:
+  Backend URL  → https://civic-resolve-backend.up.railway.app
+  Frontend URL → https://civic-resolve-frontend.up.railway.app
+  (URLs will be different — Railway auto-generates them)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 1 — INSTALL RAILWAY CLI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Open Command Prompt and run:
+
+  npm install -g @railway/cli
+
+Verify it installed:
+  railway --version
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 2 — CREATE FREE RAILWAY ACCOUNT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1. Go to https://railway.app
+  2. Click "Start a New Project" → Sign up with Google or Email
+  3. Verify your email
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 3 — LOGIN VIA CMD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  railway login
+
+  Browser opens → click Authorize Railway → return to CMD
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 4 — DEPLOY BACKEND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  cd C:\Users\ELCOT\civic-resolve\civicbridge_work\civic-resolve-v2\backend
+
+  railway init
+  (Choose: Create new project → name it "civic-resolve-backend")
+
+  railway up
+
+  Wait 2-3 minutes for build to finish.
+
+  Get your backend URL:
+  railway open
+
+  Copy the URL — it looks like:
+  https://civic-resolve-backend-xxxx.up.railway.app
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 5 — SET BACKEND ENVIRONMENT VARIABLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+In the same backend CMD:
+
+  railway variables set SECRET_KEY=civic-resolve-secret-2026-xyz
+  railway variables set FLASK_ENV=production
+  railway variables set DEV_MODE=false
+
+  Optional (for real OTP emails):
+  railway variables set SMTP_EMAIL=yourgmail@gmail.com
+  railway variables set SMTP_PASSWORD=your-app-password
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 6 — DEPLOY FRONTEND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Open a NEW CMD window:
+
+  cd C:\Users\ELCOT\civic-resolve\civicbridge_work\civic-resolve-v2\frontend
+
+  railway init
+  (Choose: Create new project → name it "civic-resolve-frontend")
+
+  Set the backend URL (replace with YOUR actual backend URL from Step 4):
+  railway variables set REACT_APP_API_URL=https://civic-resolve-backend-xxxx.up.railway.app/api
+
+  Deploy:
+  railway up
+
+  Wait 3-5 minutes for React build to finish.
+
+  Get your frontend URL:
+  railway open
+
+  This is your PUBLIC website link! Share it with everyone.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 7 — TEST YOUR LIVE WEBSITE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1. Open the frontend URL in your browser
+  2. Register a new citizen account (OTP will appear on screen in dev mode)
+  3. Login as admin: admin@civic.gov / admin123
+  4. Share the URL with anyone — they can access it from any device!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Build failed?
+  → railway logs   (see what went wrong)
+
+"Failed to fetch" on live site?
+  → Check REACT_APP_API_URL is set correctly in frontend
+  → Run: railway variables (to see all variables)
+
+Re-deploy after changes:
+  → Go to backend or frontend folder → railway up
+
+View logs:
+  → railway logs --tail
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FREE TIER LIMITS (Railway Hobby Plan)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  • $5 free credit per month (enough for small projects)
+  • Database resets if service sleeps (use Postgres add-on for permanent data)
+  • Add Railway PostgreSQL: railway add --plugin postgresql
+    Then set DATABASE_URL and update backend to use Postgres
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CUSTOM DOMAIN (Optional)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1. Go to railway.app → your frontend project
+  2. Settings → Domains → Add Custom Domain
+  3. Enter your domain e.g. civicresolve.gov.in
+  4. Follow DNS instructions

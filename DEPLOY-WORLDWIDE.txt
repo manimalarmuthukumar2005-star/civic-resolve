@@ -1,0 +1,153 @@
+╔══════════════════════════════════════════════════════════════════╗
+║     CIVIC RESOLVE — DEPLOY WORLDWIDE (GitHub + Render + Netlify)║
+║          100% Free · Accessible by everyone worldwide           ║
+╚══════════════════════════════════════════════════════════════════╝
+
+RESULT:
+  Backend  → https://civic-resolve-backend.onrender.com
+  Frontend → https://civic-resolve.netlify.app
+  (URLs will be slightly different based on your name)
+
+You need:
+  ✅ GitHub account (you already have one)
+  ✅ Render account (free) → render.com
+  ✅ Netlify account (free) → netlify.com
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — UPLOAD BACKEND TO GITHUB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1 — Create GitHub Repository
+  1. Go to github.com → login
+  2. Click the + icon (top right) → New repository
+  3. Repository name: civic-resolve-backend
+  4. Set to: Public
+  5. DO NOT check "Add README"
+  6. Click: Create repository
+  7. Copy the URL shown e.g. https://github.com/yourusername/civic-resolve-backend.git
+
+STEP 2 — Upload backend code (CMD)
+  cd C:\Users\ELCOT\civicbridge_work\civic-resolve-v2\backend
+
+  git init
+  git add .
+  git commit -m "Civic Resolve backend initial"
+  git branch -M main
+  git remote add origin https://github.com/YOURUSERNAME/civic-resolve-backend.git
+  git push -u origin main
+
+  (Replace YOURUSERNAME with your actual GitHub username)
+  When asked for password: use your GitHub password or Personal Access Token
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — DEPLOY BACKEND ON RENDER (Free)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 3 — Create Render account
+  1. Go to render.com
+  2. Click "Get Started for Free"
+  3. Sign up with GitHub (easiest)
+
+STEP 4 — Deploy backend
+  1. Click New + → Web Service
+  2. Connect GitHub → select civic-resolve-backend repo
+  3. Fill in these settings:
+       Name:            civic-resolve-backend
+       Runtime:         Python 3
+       Build Command:   pip install -r requirements.txt
+       Start Command:   gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+       Plan:            Free
+  4. Click "Advanced" → Add Environment Variables:
+       SECRET_KEY    →  civic-resolve-secret-2026-change-this
+       FLASK_ENV     →  production
+       DEV_MODE      →  false
+  5. Click: Create Web Service
+  6. Wait 3-5 minutes for build to finish (you'll see green "Live")
+  7. Copy your backend URL e.g:
+       https://civic-resolve-backend.onrender.com
+
+  ⚠️  IMPORTANT: Note this URL — you need it for Step 6
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — BUILD FRONTEND WITH BACKEND URL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 5 — Build the frontend (CMD)
+  Open CMD and run:
+
+  cd C:\Users\ELCOT\civicbridge_work\civic-resolve-v2\frontend
+  npm install
+
+  Now set your Render backend URL (replace with YOUR actual URL):
+  set REACT_APP_API_URL=https://civic-resolve-backend.onrender.com/api
+
+  Build the production files:
+  npm run build
+
+  This creates a "build" folder inside frontend.
+  That build folder is what you upload to Netlify.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — DEPLOY FRONTEND ON NETLIFY (Free, No GitHub needed)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 6 — Deploy to Netlify by drag & drop
+  1. Go to netlify.com → Sign up free (use email)
+  2. After login, you see "Sites"
+  3. Find the box that says:
+     "Drag and drop your site's output folder here"
+  4. Open File Explorer → go to:
+     C:\Users\ELCOT\civicbridge_work\civic-resolve-v2\frontend\build
+  5. Drag the entire "build" folder into Netlify
+  6. Wait 30 seconds → Netlify gives you a URL like:
+     https://magical-name-123456.netlify.app
+
+  🎉 THAT IS YOUR WORLDWIDE WEBSITE LINK!
+  Share it with anyone — works on mobile, PC, any country.
+
+STEP 7 — Give it a custom name (optional)
+  1. In Netlify → click your site → Site settings
+  2. Change site name to: civic-resolve
+  3. Your URL becomes: https://civic-resolve.netlify.app
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TESTING YOUR LIVE WEBSITE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1. Open https://your-site.netlify.app
+  2. Login: admin@civic.gov / admin123
+  3. Register a new citizen account
+  4. Share the link with anyone!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COMMON ISSUES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"Failed to fetch" on live site:
+  → You forgot to set REACT_APP_API_URL before npm run build
+  → Run steps 5 again with the correct URL, rebuild, re-upload to Netlify
+
+Page goes blank on refresh:
+  → Already fixed! _redirects file is included in the build
+
+Render backend is slow first time:
+  → Free tier "sleeps" after 15 min of no use
+  → First request takes 30-60 seconds to wake up
+  → After that it's fast. Upgrade to $7/month for always-on.
+
+git push asks for password:
+  → GitHub no longer accepts passwords
+  → Go to github.com → Settings → Developer Settings
+    → Personal Access Tokens → Tokens (classic) → Generate new token
+  → Check: repo scope → Generate → copy and use as password
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+UPDATE YOUR SITE AFTER CHANGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Backend changes:
+  cd backend → git add . → git commit -m "update" → git push
+  Render auto-redeploys in 2-3 minutes
+
+Frontend changes:
+  cd frontend
+  set REACT_APP_API_URL=https://your-backend.onrender.com/api
+  npm run build
+  Drag new build folder to Netlify again

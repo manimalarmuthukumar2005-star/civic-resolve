@@ -1,0 +1,83 @@
+╔══════════════════════════════════════════════════════════════╗
+║           CIVIC RESOLVE — HOW TO RUN (CMD GUIDE)            ║
+╚══════════════════════════════════════════════════════════════╝
+
+REQUIREMENT — Install these first (one time only):
+  • Python 3.10+  → https://python.org/downloads
+  • Node.js 18+   → https://nodejs.org
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 1 — Extract the ZIP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Right-click civic-resolve-final.zip → Extract All
+Choose a location e.g. C:\Users\ELCOT\civic-resolve\
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 2 — START BACKEND (CMD Window 1)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Open Command Prompt (search "cmd" in Windows)
+
+cd C:\Users\ELCOT\civic-resolve\civicbridge_work\civic-resolve-v2\backend
+pip install -r requirements.txt
+python app.py
+
+✅ You should see:
+   🚀 Civic Resolve Backend starting on http://localhost:5000
+
+KEEP THIS WINDOW OPEN.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 3 — START FRONTEND (CMD Window 2)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Open a NEW Command Prompt window
+
+cd C:\Users\ELCOT\civic-resolve\civicbridge_work\civic-resolve-v2\frontend
+npm install
+npm start
+
+✅ Browser opens automatically at http://localhost:3000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LOGIN CREDENTIALS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Role            Email                    Password
+─────────────────────────────────────────────────
+Admin           admin@civic.gov          admin123
+Roads Dept      roads@civic.gov          dept123
+Sanitation      sanitation@civic.gov     dept123
+Drainage        drainage@civic.gov       dept123
+Electrical      electrical@civic.gov     dept123
+Citizen         Register new account     —
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ENABLE REAL OTP EMAIL (Optional)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Edit backend\.env and fill in:
+   SMTP_EMAIL=yourgmail@gmail.com
+   SMTP_PASSWORD=xxxx xxxx xxxx xxxx   ← Gmail App Password
+
+Without this, OTP is shown on screen (dev mode).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COMMON ERRORS & FIXES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"Failed to fetch"
+  → Backend CMD window was closed. Reopen and run python app.py
+
+"npm is not recognized"
+  → Install Node.js from nodejs.org, restart CMD
+
+"pip is not recognized"
+  → Install Python from python.org, restart CMD
+
+Port 5000 already in use:
+  netstat -ano | findstr :5000
+  taskkill /PID <number> /F
+  then run python app.py again
+
+Dashboard shows blank:
+  → Sign out, register a new account
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BOTH CMD WINDOWS MUST STAY OPEN WHILE USING THE SITE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
