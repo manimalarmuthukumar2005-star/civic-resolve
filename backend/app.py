@@ -367,22 +367,17 @@ def send_otp():
     db.execute("DELETE FROM otp_store WHERE email=?", (email,))
     db.execute("INSERT INTO otp_store (email, otp, expires_at) VALUES (?,?,?)", (email, otp_code, expires))
     db.commit()
-    # Send email using smtplib (Gmail)
+    # Send email
     sent = _send_otp_email(email, otp_code)
-    dev_mode = os.environ.get('DEV_MODE', 'false').lower() == 'true'
-    if sent and not dev_mode:
-        # Email sent successfully via Gmail SMTP
+    if sent:
         return jsonify({
             'message': f'OTP sent to {email}. Please check your inbox.',
             'dev_otp': None
         })
     else:
-        # If email was sent in dev_mode, or if cloud firewall blocked SMTP
-        msg = f'OTP sent to {email}. Please check your inbox.' if sent else 'OTP generated (cloud host fallback — check below).'
         return jsonify({
-            'message': msg,
-            'dev_otp': otp_code
-        })
+            'error': 'Failed to send OTP email. Please ensure your email address is correct and try again.'
+        }), 500
 
 @app.route('/api/auth/verify-otp', methods=['POST'])
 def verify_otp():
@@ -553,12 +548,15 @@ def forgot_password():
                (email, otp_code, expires))
     db.commit()
     sent = _send_otp_email(email, otp_code)
-    dev_mode = os.environ.get('DEV_MODE','false').lower() == 'true'
-    msg = 'Password reset OTP sent to your email.' if sent else 'OTP generated (cloud host fallback — check below).'
-    return jsonify({
-        'message': msg,
-        'dev_otp': otp_code if (not sent or dev_mode) else None
-    })
+    if sent:
+        return jsonify({
+            'message': 'Password reset OTP sent to your email. Please check your inbox.',
+            'dev_otp': None
+        })
+    else:
+        return jsonify({
+            'error': 'Failed to send password reset OTP. Please try again later.'
+        }), 500
 
 
 @app.route('/api/auth/reset-password', methods=['POST'])
