@@ -445,11 +445,30 @@ def _send_otp_email(to_email, otp_code):
           </div>
         </div>"""
         msg.attach(MIMEText(html, 'html'))
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=15) as server:
-            server.login(smtp_email, smtp_pass)
-            server.sendmail(smtp_email, to_email, msg.as_string())
-        print(f"[OTP] Email sent to {to_email}")
-        return True
+        sent_successfully = False
+        try:
+            # Try Port 587 (TLS) - standard for cloud hosts
+            with smtplib.SMTP('smtp.gmail.com', 587, timeout=12) as server:
+                server.starttls()
+                server.login(smtp_email, smtp_pass)
+                server.sendmail(smtp_email, to_email, msg.as_string())
+                sent_successfully = True
+        except Exception as e1:
+            print(f"[OTP 587] Warning: {e1}, trying 465 SSL fallback...")
+            try:
+                # Fallback to Port 465 (SSL)
+                with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=12) as server:
+                    server.login(smtp_email, smtp_pass)
+                    server.sendmail(smtp_email, to_email, msg.as_string())
+                    sent_successfully = True
+            except Exception as e2:
+                print(f"[OTP 465] Error: {e2}")
+                raise e2
+
+        if sent_successfully:
+            print(f"[OTP] Email sent to {to_email}")
+            return True
+        return False
     except Exception as e:
         print(f"[OTP] Email failed: {e}. OTP for {to_email}: {otp_code}")
         return False
