@@ -377,11 +377,12 @@ def send_otp():
             'dev_otp': otp_code if dev_mode else None
         })
     else:
-        smtp_configured = bool(os.environ.get('SMTP_EMAIL') and os.environ.get('SMTP_PASSWORD') and
+        smtp_configured = bool(os.environ.get('SMTP_EMAIL', 'manimalarmuthukumar2005@gmail.com') and
+                               os.environ.get('SMTP_PASSWORD', 'lbkzofpdgxeuxfvt') and
                                not os.environ.get('SMTP_EMAIL','').startswith('yourgmail'))
         if smtp_configured:
             # SMTP configured but failed — return error
-            return jsonify({'error': 'Failed to send OTP email. Please check your SMTP settings in .env file.'}), 500
+            return jsonify({'error': 'Failed to send OTP email. Please check your internet connection or email address.'}), 500
         else:
             # SMTP not configured at all — dev mode fallback
             return jsonify({
@@ -416,8 +417,8 @@ def _send_otp_email(to_email, otp_code):
     import smtplib
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
-    smtp_email = os.environ.get('SMTP_EMAIL', '')
-    smtp_pass  = os.environ.get('SMTP_PASSWORD', '')
+    smtp_email = os.environ.get('SMTP_EMAIL', 'manimalarmuthukumar2005@gmail.com')
+    smtp_pass  = os.environ.get('SMTP_PASSWORD', 'lbkzofpdgxeuxfvt').replace(' ', '')
     if not smtp_email or not smtp_pass:
         print(f"[OTP] Email not configured. OTP for {to_email}: {otp_code}")
         return False
@@ -444,7 +445,7 @@ def _send_otp_email(to_email, otp_code):
           </div>
         </div>"""
         msg.attach(MIMEText(html, 'html'))
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=15) as server:
             server.login(smtp_email, smtp_pass)
             server.sendmail(smtp_email, to_email, msg.as_string())
         print(f"[OTP] Email sent to {to_email}")
@@ -512,9 +513,9 @@ def forgot_password():
     db.commit()
     sent = _send_otp_email(email, otp_code)
     dev_mode = os.environ.get('DEV_MODE','false').lower() == 'true'
-    smtp_configured = (os.environ.get('SMTP_EMAIL','').strip() and
-                       not os.environ.get('SMTP_EMAIL','').startswith('your-actual') and
-                       not os.environ.get('SMTP_EMAIL','').startswith('yourgmail'))
+    smtp_configured = bool(os.environ.get('SMTP_EMAIL', 'manimalarmuthukumar2005@gmail.com') and
+                           os.environ.get('SMTP_PASSWORD', 'lbkzofpdgxeuxfvt') and
+                           not os.environ.get('SMTP_EMAIL','').startswith('yourgmail'))
     show_otp = (not sent and not smtp_configured) or dev_mode
     return jsonify({
         'message': 'Password reset OTP sent to your email.' if sent else 'OTP generated (dev mode — check below).',
