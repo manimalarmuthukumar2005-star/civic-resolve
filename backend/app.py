@@ -421,7 +421,37 @@ def _send_otp_email(to_email, otp_code):
       </div>
     </div>"""
 
-    # 1. Try Resend REST API (HTTPS - port 443, never blocked by cloud firewalls)
+    # 1. Try Brevo REST API (HTTPS - port 443, sends to ANY recipient worldwide without custom domain!)
+    brevo_key = os.environ.get('BREVO_API_KEY', '').strip()
+    if brevo_key:
+        try:
+            import urllib.request, json
+            sender_email = os.environ.get('BREVO_SENDER_EMAIL', os.environ.get('SMTP_EMAIL', 'manimalarmuthukumar2005@gmail.com'))
+            sender_name  = os.environ.get('BREVO_SENDER_NAME', 'Civic Resolve')
+            payload = {
+                "sender": {"name": sender_name, "email": sender_email},
+                "to": [{"email": to_email}],
+                "subject": f"Your Civic Resolve OTP: {otp_code}",
+                "htmlContent": html
+            }
+            req = urllib.request.Request(
+                "https://api.brevo.com/v3/smtp/email",
+                data=json.dumps(payload).encode("utf-8"),
+                headers={
+                    "api-key": brevo_key,
+                    "Content-Type": "application/json",
+                    "accept": "application/json",
+                    "User-Agent": "CivicResolve/1.0"
+                }
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                if resp.status in (200, 201):
+                    print(f"[OTP Brevo] Real email sent to {to_email}")
+                    return True
+        except Exception as e_brevo:
+            print(f"[OTP Brevo] Notice: {e_brevo}. Trying Resend fallback...")
+
+    # 2. Try Resend REST API (HTTPS - port 443, free domain sends to owner email)
     resend_key = os.environ.get('RESEND_API_KEY', '').strip()
     if resend_key:
         try:
@@ -449,7 +479,7 @@ def _send_otp_email(to_email, otp_code):
         except Exception as e_resend:
             print(f"[OTP Resend] Notice: {e_resend}. Trying SMTP fallback...")
 
-    # 2. Try Gmail SMTP fallback
+    # 3. Try Gmail SMTP fallback
     import smtplib
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
