@@ -407,12 +407,59 @@ def verify_otp():
     return jsonify({'message': 'OTP verified successfully', 'verified': True})
 
 def _send_otp_email(to_email, otp_code):
-    """Send OTP via Gmail SMTP. Configure SMTP_EMAIL and SMTP_PASSWORD env vars."""
+    """Send OTP via Resend REST API (HTTPS port 443 - works on cloud hosts) with Gmail SMTP fallback."""
+    html = f"""
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #eee">
+      <div style="background:linear-gradient(135deg,#e53935,#ff6f00);padding:28px 32px;text-align:center">
+        <h1 style="color:#fff;margin:0;font-size:1.6rem">🏛️ Civic Resolve</h1>
+        <p style="color:rgba(255,255,255,.85);margin:6px 0 0;font-size:.9rem">Government Issue Portal</p>
+      </div>
+      <div style="padding:36px 32px;text-align:center">
+        <p style="color:#333;font-size:1rem;margin-bottom:8px">Your One-Time Password is:</p>
+        <div style="font-size:2.8rem;font-weight:800;letter-spacing:12px;color:#e53935;padding:20px;background:#fff5f5;border-radius:10px;margin:16px 0;border:2px dashed #e53935">
+          {otp_code}
+        </div>
+        <p style="color:#888;font-size:.84rem">Valid for <strong>10 minutes</strong>. Do not share this OTP with anyone.</p>
+      </div>
+      <div style="background:#f9f9f9;padding:16px 32px;text-align:center;border-top:1px solid #eee">
+        <p style="color:#aaa;font-size:.75rem;margin:0">Civic Resolve · Government Digital Governance Initiative</p>
+      </div>
+    </div>"""
+
+    # 1. Try Resend REST API (HTTPS - port 443, never blocked by cloud firewalls)
+    resend_key = os.environ.get('RESEND_API_KEY', '').strip()
+    if resend_key:
+        try:
+            import urllib.request, json
+            from_sender = os.environ.get('RESEND_FROM', 'Civic Resolve <onboarding@resend.dev>')
+            payload = {
+                "from": from_sender,
+                "to": [to_email],
+                "subject": f"Your Civic Resolve OTP: {otp_code}",
+                "html": html
+            }
+            req = urllib.request.Request(
+                "https://api.resend.com/emails",
+                data=json.dumps(payload).encode("utf-8"),
+                headers={
+                    "Authorization": f"Bearer {resend_key}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "CivicResolve/1.0"
+                }
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                if resp.status in (200, 201):
+                    print(f"[OTP Resend] Real email sent to {to_email}")
+                    return True
+        except Exception as e_resend:
+            print(f"[OTP Resend] Notice: {e_resend}. Trying SMTP fallback...")
+
+    # 2. Try Gmail SMTP fallback
     import smtplib
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
-    smtp_email = os.environ.get('SMTP_EMAIL', 'manimalarmuthukumar2005@gmail.com')
-    smtp_pass  = os.environ.get('SMTP_PASSWORD', 'lbkzofpdgxeuxfvt').replace(' ', '')
+    smtp_email = os.environ.get('SMTP_EMAIL', '')
+    smtp_pass  = os.environ.get('SMTP_PASSWORD', '').replace(' ', '')
     if not smtp_email or not smtp_pass:
         print(f"[OTP] Email not configured. OTP for {to_email}: {otp_code}")
         return False
@@ -421,50 +468,31 @@ def _send_otp_email(to_email, otp_code):
         msg['Subject'] = f'Your Civic Resolve OTP: {otp_code}'
         msg['From']    = smtp_email
         msg['To']      = to_email
-        html = f"""
-        <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #eee">
-          <div style="background:linear-gradient(135deg,#e53935,#ff6f00);padding:28px 32px;text-align:center">
-            <h1 style="color:#fff;margin:0;font-size:1.6rem">🏛️ Civic Resolve</h1>
-            <p style="color:rgba(255,255,255,.85);margin:6px 0 0;font-size:.9rem">Government Issue Portal</p>
-          </div>
-          <div style="padding:36px 32px;text-align:center">
-            <p style="color:#333;font-size:1rem;margin-bottom:8px">Your One-Time Password is:</p>
-            <div style="font-size:2.8rem;font-weight:800;letter-spacing:12px;color:#e53935;padding:20px;background:#fff5f5;border-radius:10px;margin:16px 0;border:2px dashed #e53935">
-              {otp_code}
-            </div>
-            <p style="color:#888;font-size:.84rem">Valid for <strong>10 minutes</strong>. Do not share this OTP with anyone.</p>
-          </div>
-          <div style="background:#f9f9f9;padding:16px 32px;text-align:center;border-top:1px solid #eee">
-            <p style="color:#aaa;font-size:.75rem;margin:0">Civic Resolve · Government Digital Governance Initiative</p>
-          </div>
-        </div>"""
         msg.attach(MIMEText(html, 'html'))
         sent_successfully = False
         try:
-            # Try Port 587 (TLS) - standard for cloud hosts
-            with smtplib.SMTP('smtp.gmail.com', 587, timeout=12) as server:
+            # Try Port 587 (TLS)
+            with smtplib.SMTP('smtp.gmail.com', 587, timeout=6) as server:
                 server.starttls()
                 server.login(smtp_email, smtp_pass)
                 server.sendmail(smtp_email, to_email, msg.as_string())
                 sent_successfully = True
         except Exception as e1:
-            print(f"[OTP 587] Warning: {e1}, trying 465 SSL fallback...")
             try:
                 # Fallback to Port 465 (SSL)
-                with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=12) as server:
+                with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=6) as server:
                     server.login(smtp_email, smtp_pass)
                     server.sendmail(smtp_email, to_email, msg.as_string())
                     sent_successfully = True
             except Exception as e2:
-                print(f"[OTP 465] Error: {e2}")
-                raise e2
+                pass
 
         if sent_successfully:
-            print(f"[OTP] Email sent to {to_email}")
+            print(f"[OTP SMTP] Email sent to {to_email}")
             return True
         return False
     except Exception as e:
-        print(f"[OTP] Email failed: {e}. OTP for {to_email}: {otp_code}")
+        print(f"[OTP SMTP] Email failed: {e}. OTP for {to_email}: {otp_code}")
         return False
 
 @app.route('/api/auth/register', methods=['POST'])
