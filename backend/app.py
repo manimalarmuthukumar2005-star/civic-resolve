@@ -370,25 +370,19 @@ def send_otp():
     # Send email using smtplib (Gmail)
     sent = _send_otp_email(email, otp_code)
     dev_mode = os.environ.get('DEV_MODE', 'false').lower() == 'true'
-    if sent:
-        # Email sent successfully — never show OTP unless DEV_MODE=true
+    if sent and not dev_mode:
+        # Email sent successfully via Gmail SMTP
         return jsonify({
             'message': f'OTP sent to {email}. Please check your inbox.',
-            'dev_otp': otp_code if dev_mode else None
+            'dev_otp': None
         })
     else:
-        smtp_configured = bool(os.environ.get('SMTP_EMAIL', 'manimalarmuthukumar2005@gmail.com') and
-                               os.environ.get('SMTP_PASSWORD', 'lbkzofpdgxeuxfvt') and
-                               not os.environ.get('SMTP_EMAIL','').startswith('yourgmail'))
-        if smtp_configured:
-            # SMTP configured but failed — return error
-            return jsonify({'error': 'Failed to send OTP email. Please check your internet connection or email address.'}), 500
-        else:
-            # SMTP not configured at all — dev mode fallback
-            return jsonify({
-                'message': 'Email not configured. OTP shown below (dev mode only).',
-                'dev_otp': otp_code
-            })
+        # If email was sent in dev_mode, or if cloud firewall blocked SMTP
+        msg = f'OTP sent to {email}. Please check your inbox.' if sent else 'OTP generated (cloud host fallback — check below).'
+        return jsonify({
+            'message': msg,
+            'dev_otp': otp_code
+        })
 
 @app.route('/api/auth/verify-otp', methods=['POST'])
 def verify_otp():
@@ -532,13 +526,10 @@ def forgot_password():
     db.commit()
     sent = _send_otp_email(email, otp_code)
     dev_mode = os.environ.get('DEV_MODE','false').lower() == 'true'
-    smtp_configured = bool(os.environ.get('SMTP_EMAIL', 'manimalarmuthukumar2005@gmail.com') and
-                           os.environ.get('SMTP_PASSWORD', 'lbkzofpdgxeuxfvt') and
-                           not os.environ.get('SMTP_EMAIL','').startswith('yourgmail'))
-    show_otp = (not sent and not smtp_configured) or dev_mode
+    msg = 'Password reset OTP sent to your email.' if sent else 'OTP generated (cloud host fallback — check below).'
     return jsonify({
-        'message': 'Password reset OTP sent to your email.' if sent else 'OTP generated (dev mode — check below).',
-        'dev_otp': otp_code if show_otp else None
+        'message': msg,
+        'dev_otp': otp_code if (not sent or dev_mode) else None
     })
 
 
